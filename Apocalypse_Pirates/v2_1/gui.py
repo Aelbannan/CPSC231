@@ -7,6 +7,7 @@ import grid
 import ai
 import random
 import sys
+import audio
 
 # fonts
 big_font = ('Lucida Console', 16, 'bold underline')
@@ -218,6 +219,9 @@ class ApocalypseGUI:
 		self.bac_canvas.create_image(0, 0, image = self.new_bac, anchor = NW, tag = 'bac')
 		self.bac_canvas.unbind('<1>')
 		self.bac_canvas.bind('<1>', self.new_game_clicked) # so we can do that fancy click to start
+		
+		#Plays start notification
+		audio.play_music('start.wav')
 	
 	def new_game_clicked(self, event):
 		if 625 <= event.x <= 840 and 460 <= event.y <= 535:
@@ -324,7 +328,7 @@ class ApocalypseGUI:
 		
 	def setup_game(self, *args):
 		#self.choose_player()
-		
+		audio.play_music("indusalarm.wav")
 		self.bac_canvas.delete('bac')
 		
 		self.bac_canvas.create_image(0, 0, image = self.main_bac, anchor = NW, tag = 'bac') # add spiffy background
@@ -409,7 +413,7 @@ class ApocalypseGUI:
 		
 		#print('hey',self.cur_piece)
 		if self.cur_piece == '': # if you haven't picked a piece yet
-		
+			audio.play_music("pickup.wav")
 			for e in self.dic_human: # loop thru human dict
 				
 				if self.human_board.board[x][y] == e: # if this clicked piece is one of yours!!!!
@@ -422,14 +426,14 @@ class ApocalypseGUI:
 					
 					
 		elif self.cur_piece == self.human_board.board[x][y]: # if you click on the piece you already selected, deselect it!
-				
+			audio.play_music("putdown.wav")	
 			self.output_text('You deselected ' + self.cur_piece) 		
 			
 			self.cur_piece = '' # i aint select no darn piece
 			
 			
 		else: # else
-			
+			audio.play_music("alert.wav")
 			if self.human_board.validate_location(self.last_x, self.last_y, x, y, self.cur_piece, ai.board.board): # if valid move
 			
 				# get the ai move first (so it doesn't cheat ;) )
