@@ -64,7 +64,7 @@ class node:
 					c.grow_tree()
 					
 			else:
-					
+				#What does this do exactly?	
 				possible_moves.append(self)
 				
 		elif self.state == 'ai':
@@ -79,7 +79,7 @@ class node:
 			best = best_moves(self.children)
 			#print(best)
 			for b in best:
-				
+				#What is this returning? What will the value of this be? Will it be a certain node?
 				c = self.children[b]
 				
 				won = grid.get_winner(c.dic_human, c.dic_ai)
@@ -174,7 +174,7 @@ class node:
 									
 					new_row = loc[0] + forward
 					new_col = loc[1]
-					
+					#Make this a function. We have called it twice so far. 
 					if 0 <= new_col < grid.GRID_WIDTH and 0 <= new_row < grid.GRID_HEIGHT: # if move is on board
 						
 							# if move is not overlapping another piece
