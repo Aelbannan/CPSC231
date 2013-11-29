@@ -10,7 +10,7 @@ import sys
 import audio
 
 # fonts
-big_font = ('Lucida Console', 16, 'bold underline')
+big_font = ('Verdana', 16, 'bold')
 little_font = ('Trebuchet MS', 10)
 
 penalty = 0 # penalty points
@@ -58,10 +58,82 @@ class ApocalypseGUI:
 		# Make the titlescreen
 		self.setup_titlescreen()
 		
+		# Make the menubar
+		self.load_menubar()
 		# Tkinter loop
 		self.root.mainloop()
+	
+	def load_menubar(self):
 		
+		#Creates a Menu Bar
+		self.menubar = Menu(self.root)
 		
+		#Creates a file sub-menu 
+		self.filemenu = Menu(self.root, tearoff=0)
+		
+		#Adds 'commands' options in the menu
+		self.filemenu.add_command(label="Difficulty", command = self.get_difficulty)
+		self.filemenu.add_command(label="Save")
+		self.filemenu.add_separator()
+		self.filemenu.add_command(label="Exit", command = self.do_exit)
+		
+		#Adds filemenu to menubar
+		self.menubar.add_cascade(label="File", menu=self.filemenu)
+		
+		#Init
+		self.root.config(menu=self.menubar)
+	
+	#Exits the program
+	def do_exit(self):
+		global root
+		self.root.destroy()
+	
+	#Difficulty slider, Function is the new dialog that pops up.... 
+	def get_difficulty(self):
+		
+		#Var set
+		self.scaledifficulty = 0
+	
+		#Create TopLevel - Dialog and set size
+		self.window = Toplevel(self.root, width = 420, height= 240) #TopLevel Dialog created with a set width and height
+		self.window.title('Set the difficulty') #Give it a title
+		
+		#Create a frame and place it
+		self.diff_frame = ttk.Frame(self.window)   #Create ttk Frame within parent window
+		self.diff_frame.place(x = 0, y = 0, width = 420, height = 240) # Place diff_frame with set width and height
+		
+		#Create title text. 
+		self.ttext1 = ttk.Label(self.diff_frame, font = big_font, text= "Difficulty Slider: ") #Label created with text desired
+		self.ttext1.place(x=210, y=15, anchor = CENTER) #Placing Title Text, with a center justification
+		
+		#Create a slider, and give the variable ther value of the slider
+		self.scale = ttk.Scale(self.diff_frame, from_=0, to=8, orient =HORIZONTAL, value = ai.difficulty) #Creates scale and gives it the value of the current AI. 
+		self.scale.place(x = 210, y =60 , anchor=CENTER, height = 30, width = 240, ) #Places slider 
+
+		#Adds a label with information related to the difficulty of the ai; Disclaimer. See text above for a more thorough explanation of what each line does. 
+		self.sctext1 = ttk.Label(self.diff_frame, text="The slider controls the difficulty of the AI. Please note that any ", font = little_font)
+		self.sctext1.place(x = 210, y = 100, anchor = CENTER)
+		self.sctext2 = ttk.Label(self.diff_frame, text="value over 4 will take a huge amount of computation.", font = little_font)
+		self.sctext2.place(x = 210, y = 120, anchor = CENTER)
+		self.sctext3 = ttk.Label(self.diff_frame, text="So use with caution.", font = little_font)
+		self.sctext3.place(x = 210, y = 140, anchor = CENTER)
+		
+		#Confirming that they what they just did....
+		self.ok_button = ttk.Button(self.diff_frame, text = 'Okay', command = self.do_difficulty) #When button pressed it activates the method do_difficulty within the class
+		self.ok_button.place(x =320, y =200, anchor = NW) #Place button,  
+	
+	#Does the action of the changing the difficulty
+	def do_difficulty(self):
+		
+		#Gets the value of the scale before we get rid of it. 
+		self.diff = self.scale.get()
+		
+		#Destroys the window that we no longer need
+		self.window.destroy()
+		
+		#Sets ai difficulty equal to the slider
+		ai.difficulty = int(self.diff)
+
 	def load_resources(self):
 		
 		# background images
@@ -260,6 +332,9 @@ class ApocalypseGUI:
 			self.bac_canvas.create_image(3*self.w/4 + 72, self.h - 64, image = self.done_button, tag = 'done')
 			self.bac_canvas.tag_bind('done', '<Button-1>', functools.partial(self.choose_char, 199 , 0))
 			
+
+
+			
 		'''for i in range(4):
 			for j in range(3):
 			
@@ -290,7 +365,7 @@ class ApocalypseGUI:
 					self.bac_canvas.itemconfig('bac'+str(i)+str(j), image = self.bac_chars[0])
 					
 			self.bac_canvas.itemconfig('bac'+str(a)+str(b), image = self.bac_chars[1])
-			
+
 		
 	def done_setup(self, color, char):
 
@@ -330,7 +405,7 @@ class ApocalypseGUI:
 		#self.choose_player()
 		audio.play_music("indusalarm.wav")
 		self.bac_canvas.delete('bac')
-		
+
 		self.bac_canvas.create_image(0, 0, image = self.main_bac, anchor = NW, tag = 'bac') # add spiffy background
 		
 		#Empty grid for buttons 
