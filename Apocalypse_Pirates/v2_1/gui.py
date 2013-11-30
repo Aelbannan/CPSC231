@@ -73,7 +73,8 @@ class ApocalypseGUI:
 		
 		#Adds 'commands' options in the menu
 		self.filemenu.add_command(label="Difficulty", command = self.get_difficulty)
-		self.filemenu.add_command(label="Save")
+		self.filemenu.add_command(label="New", command = self.do_new)
+		self.filemenu.add_command(label="Save", command = self.do_save)
 		self.filemenu.add_separator()
 		self.filemenu.add_command(label="Exit", command = self.do_exit)
 		
@@ -82,7 +83,13 @@ class ApocalypseGUI:
 		
 		#Init
 		self.root.config(menu=self.menubar)
-	
+	def do_save(self):
+		grid.save_game(self.human_board, ai.board)
+	def do_new(self):
+		global root
+		self.root.destroy()
+		grid.new_game()
+
 	#Exits the program
 	def do_exit(self):
 		global root
@@ -416,8 +423,8 @@ class ApocalypseGUI:
 		#Container for the board 
 		#self.board_frame = ttk.Frame(self.root)
 		#self.board_frame.place(x = self.w/2 - 6*self.BASIC_UNIT, y = self.h/2 - 2*self.BASIC_UNIT, width = 5*self.BASIC_UNIT, height = 5*self.BASIC_UNIT)
-		self.board_canvas = Canvas(self.root)
-		self.board_canvas.place(x = self.w/2 - 6*self.BASIC_UNIT - 2, y = self.h/2 - 2*self.BASIC_UNIT - 2, width = 5*self.BASIC_UNIT + 4, height = 5*self.BASIC_UNIT + 4)
+		self.board_canvas = Canvas(self.root, bd = 0)
+		self.board_canvas.place(x = self.w/2 - 6*self.BASIC_UNIT - 2, y = self.h/2 - 2*self.BASIC_UNIT - 2, width = 5*self.BASIC_UNIT + 4, height = 5*self.BASIC_UNIT + 4 )
 		
 		self.board_canvas.bind('<Button-1>', self.grid_button_clicked)
 				
@@ -702,3 +709,4 @@ class Popup_Knight:
 		else:
 		
 			messagebox.showinfo('!', 'Not on board')
+

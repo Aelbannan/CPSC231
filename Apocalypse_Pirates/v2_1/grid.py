@@ -19,22 +19,18 @@ class Grid:
                 [b,b,b,b,b]]
 	
 
-	def save_grid(_file, header, grid):
+	def save_grid(self, name):
 	# Saves the grid to an open file
 	
-		_file.write(header)	
-	
-		for i in grid:
-			
-			for j in i:
-				
-				_file.write(str(j))
-				
-			_file.write('\n')
+		write = open(name, 'w')
+		
+		for x in range(0, GRID_HEIGHT):
+			for y in range(0, GRID_WIDTH):
+				write.write(self.board[x][y] + ',')
+			write.write('\n')
+		write.close()
+		
 
-
-
-			
 		
 	# Used for loading a grid from a file 
 	def load_file(_file):
@@ -241,5 +237,14 @@ def check_knight(dic):
         
 		return dic, mp
 			
+def save_game(ai, human):
+	
+	ai.save_grid('ai.apoc')
+	human.save_grid('human.apoc')
+	
+
+
 			
-				
+def new_game():
+	
+	new_game = gui.ApocalypseGUI(960, 720)				
