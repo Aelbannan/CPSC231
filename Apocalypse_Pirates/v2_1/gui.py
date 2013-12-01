@@ -21,48 +21,91 @@ anim_length = 4
 class ApocalypseGUI:
 	
 	### Initialization ###
-	def __init__(self, w, h):		
+	def __init__(self, w, h, instance):		
 		
-		self.BASIC_UNIT = 64 # basic unit
-		self.CON_LINES = 12 # num of lines in console
-		self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
-		
-		
-		# The board for the human
-		self.human_board = grid.Grid() 
-		ai.board = grid.Grid() # ai board
-		
-		# Human piece and it's co-ordinates
-		self.cur_piece = ''
-		self.last_x = 0
-		self.last_y = 0
-		self.char = 'none'
-		self.color = 'white'
-		
-		# Create the main window
-		self.root = Tk()
-		self.root.title('Apocalypse')
-		
-		# Make the screen size stay the same
-		self.root.minsize(w,h)
-		self.root.maxsize(w,h)
-		
-		# Save width and height
-		self.w = w
-		self.h = h
+		if instance == 'new':
+			self.BASIC_UNIT = 64 # basic unit
+			self.CON_LINES = 12 # num of lines in console
+			self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
 			
+			
+			# The board for the human
+			self.human_board = grid.Grid() 
+			ai.board = grid.Grid() # ai board
+			
+			# Human piece and it's co-ordinates
+			self.cur_piece = ''
+			self.last_x = 0
+			self.last_y = 0
+			self.char = 'none'
+			self.color = 'white'
+			
+			# Create the main window
+			self.root = Tk()
+			self.root.title('Apocalypse')
+			
+			# Make the screen size stay the same
+			self.root.minsize(w,h)
+			self.root.maxsize(w,h)
+			
+			# Save width and height
+			self.w = w
+			self.h = h
 				
-		# Load sprites
-		self.load_resources()
-		
-		# Make the titlescreen
-		self.setup_titlescreen()
-		
-		# Make the menubar
-		self.load_menubar()
-		# Tkinter loop
-		self.root.mainloop()
-	
+					
+			# Load sprites
+			self.load_resources()
+			
+			# Make the titlescreen
+			self.setup_titlescreen()
+			
+			# Make the menubar
+			self.load_menubar()
+			# Tkinter loop
+			self.root.mainloop()
+			
+		elif instance == 'load':
+			self.BASIC_UNIT = 64 # basic unit
+			self.CON_LINES = 12 # num of lines in console
+			self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
+			
+			
+			# The board for the human
+			self.human_board = grid.Grid() 
+			ai.board = grid.Grid() # ai board
+			
+			# Human piece and it's co-ordinates
+			self.cur_piece = ''
+			self.last_x = 0
+			self.last_y = 0
+			self.char = 'none'
+			self.color = 'white'
+			
+			# Create the main window
+			self.root = Tk()
+			self.root.title('Apocalypse')
+			
+			# Make the screen size stay the same
+			self.root.minsize(w,h)
+			self.root.maxsize(w,h)
+			
+			# Save width and height
+			self.w = w
+			self.h = h
+				
+					
+			# Load sprites
+			self.load_resources()
+			
+			#Load the game
+			self.setup_titlescreen()
+			
+			
+			# Make the menubar
+			self.load_menubar()
+			# Tkinter loop
+			self.root.mainloop()
+			
 	def load_menubar(self):
 		
 		#Creates a Menu Bar
@@ -74,7 +117,9 @@ class ApocalypseGUI:
 		#Adds 'commands' options in the menu
 		self.filemenu.add_command(label="Difficulty", command = self.get_difficulty)
 		self.filemenu.add_command(label="New", command = self.do_new)
+		self.filemenu.add_separator()
 		self.filemenu.add_command(label="Save", command = self.do_save)
+		self.filemenu.add_command(label="Load", command = self.do_load)
 		self.filemenu.add_separator()
 		self.filemenu.add_command(label="Exit", command = self.do_exit)
 		
@@ -83,8 +128,17 @@ class ApocalypseGUI:
 		
 		#Init
 		self.root.config(menu=self.menubar)
+	
+	def do_load(self):
+		global root
+		self.root.destroy()
+		grid.load_game()
+		
 	def do_save(self):
-		grid.save_game(self.human_board, ai.board)
+
+		self.human_board.save_grid('human.apoc', self.char)
+		ai.board.save_grid('ai.apoc', self.char)
+		
 	def do_new(self):
 		global root
 		self.root.destroy()
@@ -398,7 +452,8 @@ class ApocalypseGUI:
 			self.dic_ai = { 'WP1':[3,0],'WP2':[4,1], 'WP3':[4,2], 'WP4':[4,3], 'WP5':[3,4], 'WK1':[4,0], 'WK2':[4,4] }
 			#messagebox.showinfo('', 'You are black')
 			
-		
+		elif color == 'load':
+			pass
 		# setup the boards
 		ai.board.setup_board(self.dic_ai)
 		self.human_board.setup_board(self.dic_human)
@@ -584,7 +639,7 @@ class ApocalypseGUI:
 				
 					messagebox.showinfo(' ', 'You Win! :)')
 					sys.exit()
-					
+					self.root.destroy()
 				elif won == 'draw': # if it is stalemate, Nova!
 				
 					messagebox.showinfo('', 'Stalemate!')

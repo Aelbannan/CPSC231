@@ -1,5 +1,6 @@
 #Comments go here 
 
+import gui
 #Global Variables
 b = '[ ]'
 GRID_HEIGHT = 5
@@ -19,10 +20,14 @@ class Grid:
                 [b,b,b,b,b]]
 	
 
-	def save_grid(self, name):
+	def save_grid(self, name, char):
 	# Saves the grid to an open file
 	
 		write = open(name, 'w')
+		
+		#Save the character and ending the line.
+		write.write(str(char))
+		write.write('\n')
 		
 		for x in range(0, GRID_HEIGHT):
 			for y in range(0, GRID_WIDTH):
@@ -33,18 +38,31 @@ class Grid:
 
 		
 	# Used for loading a grid from a file 
-	def load_file(_file):
+	def load_grid(self, name):
+		self.tempgrid = [[b]*GRID_WIDTH for i in range(GRID_HEIGHT)]
+		tempdic = {}
+		read = open(name, 'r')
+		charline = read.readline()
+		for  x in range(0, GRID_HEIGHT):
+			line = read.readline()
+			line = line.split(',')
+			for y in range(0, GRID_WIDTH):
+				gridvar = line[y]
+				self.tempgrid[x][y] = gridvar
+				if self.tempgrid[x][y] != b:
+					tempdic[self.tempgrid[x][y]] = [x, y]
 		
-		grid = []
+		read.close()
+		return tempdic
+	
+
+	def load_char(self, name):
 		
-		_file.readline() # reads the header
-		
-		#loops through each line of the file
-		for i in range(GRID_WIDTH):
-			line = _file.readline()[:-1]
-			grid.append(list(line))
-				
-		return grid
+		read = open(name, 'r')
+		read.seek(0)
+		char = read.readline()
+		read.close()
+		return char
 		
 	#initialize board 
 	def setup_board(self, piece_loc):
@@ -237,14 +255,19 @@ def check_knight(dic):
         
 		return dic, mp
 			
-def save_game(ai, human):
-	
-	ai.save_grid('ai.apoc')
-	human.save_grid('human.apoc')
-	
 
 
-			
 def new_game():
 	
-	new_game = gui.ApocalypseGUI(960, 720)				
+	new_game = gui.ApocalypseGUI(960, 720, 'new')				
+
+	
+	
+	
+	
+def load_game():
+	new_game = gui.ApocalypseGUI(960, 720, 'load')
+	new_game.dic_human = dict(new_game.human_board.load_grid('human.apoc'))
+	new_game.dic_ai = dict(ai.board.load_grid('ai.apoc'))	
+	new_game.done_setup('load', new_game.human_board.load_char('human.apoc'))
+		
