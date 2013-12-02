@@ -7,7 +7,7 @@ import grid
 import ai
 import random
 import sys
-import audio
+#import audio
 
 # fonts
 big_font = ('Verdana', 16, 'bold')
@@ -21,50 +21,6 @@ anim_length = 4
 class ApocalypseGUI:
 	
 	### Initialization ###
-
-	def __init__(self, w, h):		
-		
-		self.BASIC_UNIT = 64 # basic unit
-		self.CON_LINES = 12 # num of lines in console
-		self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
-		
-		
-		# The board for the human
-		self.human_board = grid.Grid() 
-		ai.board = grid.Grid() # ai board
-		
-		# Human piece and it's co-ordinates
-		self.cur_piece = ''
-		self.last_x = 0
-		self.last_y = 0
-		self.char = 'none'
-		self.color = 'white'
-		
-		# Create the main window
-		self.root = Tk()
-		self.root.title('Apocalypse')
-		
-		# Make the screen size stay the same
-		self.root.minsize(w,h)
-		self.root.maxsize(w,h)
-		
-		# Save width and height
-		self.w = w
-		self.h = h
-			
-				
-		# Load sprites
-		self.load_resources()
-		
-		# Make the titlescreen
-		self.setup_titlescreen()
-		
-		# Make the menubar
-		self.load_menubar()
-		# Tkinter loop
-		self.root.mainloop()
-	#includes the menue bar and it functions
-
 	def __init__(self, w, h, instance):		
 		
 		if instance == 'new':
@@ -150,7 +106,6 @@ class ApocalypseGUI:
 			# Tkinter loop
 			self.root.mainloop()
 			
-
 	def load_menubar(self):
 		
 		#Creates a Menu Bar
@@ -175,10 +130,11 @@ class ApocalypseGUI:
 		self.root.config(menu=self.menubar)
 	
 	def do_load(self):
-		global root
-		self.root.destroy()
-		grid.load_game()
-		
+		#global root
+		#self.root.destroy()
+		#grid.load_game()
+		self.dic_human = dict(new_game.human_board.load_grid('human.apoc'))
+		self.dic_ai = dict(ai.board.load_grid('ai.apoc'))	
 	def do_save(self):
 
 		self.human_board.save_grid('human.apoc', self.char)
@@ -239,8 +195,7 @@ class ApocalypseGUI:
 		
 		#Sets ai difficulty equal to the slider
 		ai.difficulty = int(self.diff)
-	
-	#this methode includes  all the necessary resources
+
 	def load_resources(self):
 		
 		# background images
@@ -272,17 +227,14 @@ class ApocalypseGUI:
 
 		
 		
-		# appends all the character slection images into a list
+		
 		for i in range(24):
 			self.spr_chars.append((PhotoImage(file = 'resources/images/chars/char'+str(i)+'.gif')))
 			#self.white_chars.append((PhotoImage(file = 'resources/images/chars/wchar'+str(i)+'.gif')))
 			#self.black_chars.append((PhotoImage(file = 'resources/images/chars/bchar'+str(i)+'.gif')))
-	
-	#this methode loads the peices on the board		
+			
 	def load_pieces(self, white, black):
 		
-		#this will opens set0  if user is white player or set1 if user choose to be black player
-		#then reads the file named anim inside either of the sets
 		try:
 			file = open('resources/images/pieces/set'+str(black)+'/anim', 'r')
 			file.readline()
@@ -295,15 +247,13 @@ class ApocalypseGUI:
 		except ValueError:
 			print('Error in animation file')
 			
-		# append the black peice onto a list
+		# Load the pieces 
 		for i in range(repeat_p):
 			self.black_pieces.append((PhotoImage(file = 'resources/images/pieces/set'+str(black)+'/BPawn'+str(i)+'.gif')))
 			
 		for k in range(repeat_k):
 			self.black_pieces.append((PhotoImage(file = 'resources/images/pieces/set'+str(black)+'/BKnight'+str(k)+'.gif')))
-		
-		#open set0 if player is black, and opens set1 if player is white
-		#then continues to read the file name 'anim'
+			
 		try:
 			file = open('resources/images/pieces/set'+str(white)+'/anim', 'r')
 			repeat_p = int(file.readline())
@@ -313,8 +263,7 @@ class ApocalypseGUI:
 			print('Error loading animations')
 		except ValueError:
 			print('Error in animation file')
-	
-		#append white pieces onto a list		
+				
 		for o  in range(repeat_p):
 			self.white_pieces.append((PhotoImage(file = 'resources/images/pieces/set'+str(white)+'/WPawn'+str(o)+'.gif')))
 			
@@ -351,7 +300,6 @@ class ApocalypseGUI:
 					piece = ''
 					
 				if piece != '':
-					#if the piece is a while pawn load white pawn image else load black peice image
 					if piece[1] == 'P':
 						
 						if piece[0] == 'W':
@@ -362,7 +310,7 @@ class ApocalypseGUI:
 						
 							self.board_canvas.itemconfig('piece' + str(i) + str(j), image = self.black_pieces[anim%int(.5*len(self.black_pieces))])
 
-					# if piece is a knight check to see if its black or white and load the proper image			
+							
 					elif piece[1] == 'K':
 					
 						if piece[0] == 'W':
@@ -406,12 +354,10 @@ class ApocalypseGUI:
 		self.bac_canvas.unbind('<1>')
 		self.bac_canvas.bind('<1>', self.new_game_clicked) # so we can do that fancy click to start
 		
-		#Plays start notification.
-		audio.play_music('start.wav')
-		
+		#Plays start notification
+		#audio.play_music('start.wav')
 	
 	def new_game_clicked(self, event):
-		#if 'newgame' is clicked delet the previouse canvas images and creat a new one
 		if 625 <= event.x <= 840 and 460 <= event.y <= 535:
 			self.bac_canvas.delete('bac')
 			
@@ -428,7 +374,7 @@ class ApocalypseGUI:
 		#color.place(x = 440, y = 650, width = 40, height = 20)
 		
 		#self.char = []
-			#this creats the character selection page
+		
 			for i in range(4):
 				for j in range(6):
 					row = 32
@@ -463,12 +409,9 @@ class ApocalypseGUI:
 				self.char.append(button)'''
 		
 	def choose_char(self, a, b, event):
-		#when character is chosen and thumbs up image is clicked call done_setup methode
 		if a == 199:
 			if self.char != 'none':
 				self.done_setup(self.color, self.char)
-	
-		#when the yin yang images is clicked to select color this shifts the image between loading black yin or white ring
 		elif a == 99:
 			if self.color == 'white':
 				self.bac_canvas.itemconfig('yin', image = self.spr_yin[1])
@@ -476,9 +419,6 @@ class ApocalypseGUI:
 			else:
 				self.bac_canvas.itemconfig('yin', image = self.spr_yin[0])
 				self.color = 'white'
-		
-		#when a character is clicked slightly change its backround color to indicate
-		#which caracter is selecter
 		else:
 			self.char = a * 6 + b
 			
@@ -524,11 +464,9 @@ class ApocalypseGUI:
 		
 		self.setup_game()
 		
-
-	#this methode sets up the gameplay screen		
 	def setup_game(self, *args):
 		#self.choose_player()
-		audio.play_music("indusalarm.wav")
+		#audio.play_music("indusalarm.wav")
 		self.bac_canvas.delete('bac')
 
 		self.bac_canvas.create_image(0, 0, image = self.main_bac, anchor = NW, tag = 'bac') # add spiffy background
@@ -613,7 +551,7 @@ class ApocalypseGUI:
 		
 		#print('hey',self.cur_piece)
 		if self.cur_piece == '': # if you haven't picked a piece yet
-			audio.play_music("pickup.wav")
+			#audio.play_music("pickup.wav")
 			for e in self.dic_human: # loop thru human dict
 				
 				if self.human_board.board[x][y] == e: # if this clicked piece is one of yours!!!!
@@ -626,14 +564,14 @@ class ApocalypseGUI:
 					
 					
 		elif self.cur_piece == self.human_board.board[x][y]: # if you click on the piece you already selected, deselect it!
-			audio.play_music("putdown.wav")	
+			#audio.play_music("putdown.wav")	
 			self.output_text('You deselected ' + self.cur_piece) 		
 			
 			self.cur_piece = '' # i aint select no darn piece
 			
 			
 		else: # else
-			audio.play_music("alert.wav")
+			#audio.play_music("alert.wav")
 			if self.human_board.validate_location(self.last_x, self.last_y, x, y, self.cur_piece, ai.board.board): # if valid move
 			
 				# get the ai move first (so it doesn't cheat ;) )
@@ -666,12 +604,11 @@ class ApocalypseGUI:
 					
 					x = random.randint(0, grid.GRID_HEIGHT)
 					y = random.randint(0, grid.GRID_WIDTH)
-					#if the new picked locations are not valid, repick
+				
 					while self.human_board.board[x][y] != grid.b and ai.board.board[x][y] != grid.b:
 						x = random.randint(0, grid.GRID_HEIGHT)
 						y = random.randint(0, grid.GRID_WIDTH)
-					
-					#change the location of the pawn in the ai dictionary		
+						
 					dic_ai[mb] = [x,y]
 					self.output_text('AI relocated ' + mb + ' to (' + str(x) +  ',' +str(y) + ')')
 					
@@ -703,11 +640,7 @@ class ApocalypseGUI:
 				
 					messagebox.showinfo(' ', 'You Win! :)')
 					sys.exit()
-
-					
-
 					self.root.destroy()
-
 				elif won == 'draw': # if it is stalemate, Nova!
 				
 					messagebox.showinfo('', 'Stalemate!')
@@ -717,8 +650,7 @@ class ApocalypseGUI:
 				#print(grid.recreate_grid(ai.dic_ai))
 				
 				self.cur_piece = '' # you already moved so why u need dat piece homie?
-			
-			#if the location picked is invalid.	
+				
 			else:
 			
 				global penalty # you goin to penalty!!!!!!!!
@@ -727,7 +659,7 @@ class ApocalypseGUI:
 				
 				penalty += 1 # stacks on stacks
 				
-				if penalty == 2: # with 2 invalid moves you lose
+				if penalty == 2: # red card + 6 fouls :/
 				
 					messagebox.showinfo(' ', 'You Lose! :(') # you lose
 					sys.exit() # and your kicked out! <(;-;)>
