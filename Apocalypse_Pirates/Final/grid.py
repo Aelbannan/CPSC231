@@ -1,7 +1,6 @@
+#Comments go here 
 
 import gui
-
-
 #Global Variables
 b = '[ ]'
 GRID_HEIGHT = 5
@@ -13,7 +12,7 @@ KNIGHT_MOVE = [[2,1], [2,-1], [-2,1], [-2,-1], [1,2], [1,-2], [-1,2], [-1,-2]]
 class Grid:
 	def __init__(self):
 	
-		# empty grid
+
 		self.board = [[b,b,b,b,b], \
                 [b,b,b,b,b], \
                 [b,b,b,b,b], \
@@ -23,31 +22,6 @@ class Grid:
 
 	def save_grid(self, name, char):
 	# Saves the grid to an open file
-	
-		write = open(name, 'w')
-		
-		for x in range(0, GRID_HEIGHT):
-			for y in range(0, GRID_WIDTH):
-				write.write(self.board[x][y] + ',')
-			write.write('\n')
-		write.close()
-		
-
-		
-	# Used for loading a grid from a file 
-	def load_file(_file):
-		
-		grid = []
-		
-		_file.readline() # reads the header
-		
-		#loops through each line of the file
-		for i in range(GRID_WIDTH):
-			line = _file.readline()[:-1]
-			grid.append(list(line))
-				
-		return grid
-
 	
 		write = open(name, 'w')
 		
@@ -89,7 +63,6 @@ class Grid:
 		char = read.readline()
 		read.close()
 		return char
-
 		
 	#initialize board 
 	def setup_board(self, piece_loc):
@@ -152,12 +125,9 @@ def finalize_move( dic_human, dic_ai, last_human, last_ai,):
 	test_h = dict(dic_human)
 	test_a = dict(dic_ai)
 	
-	
-	#checks the simultaneous move and see who has the upper hand
 	for piece_h in test_h:
 		
 		for piece_a in test_a:
-			
 			
 			if test_h[piece_h] == test_a[piece_a]:
 				#print('same', piece_h, piece_a)
@@ -165,18 +135,13 @@ def finalize_move( dic_human, dic_ai, last_human, last_ai,):
 					#print('h')
 					if piece_a == last_ai:
 						#print('a')
-						#if both peice are knight both are dead
 						if piece_h[1] == piece_a[1]:
 							#print('type1')
 							dic_human[last_human] = 'dead'
 							dic_ai[last_ai] = 'dead'
-							
-						#if human has a pawn and ai has a knight, human dead
 						elif piece_h[1] > piece_a[1]:
 							#print('typea')
 							dic_human[last_human] = 'dead'
-							
-						# if human has a knight and ai has a pawn, human wins
 						else:
 							#print('typeh')
 							dic_ai[last_ai] = 'dead'
@@ -252,7 +217,6 @@ def get_winner(dic_human, dic_ai):
 		return 'human'
 	else:
 		return 'none'		
-
 			
 			
 ### turns pawns to knights if possible ###
@@ -260,13 +224,11 @@ def check_knight(dic):
 			
 		counter = 0
 		mp = 'none'
-		
-		#lopps throught the dictionary to see how many knight are alive	
+			
 		for piece in dic:
 			if piece[1] == 'K' and dic[piece] != 'dead':
 				counter += 1
-                	
-                	#check the dictionary to figure out which players it belongs to apply the right row
+                
 			if piece[0] == 'B':
 				end_row = 4
 			elif piece[0] == 'W':
@@ -276,9 +238,9 @@ def check_knight(dic):
 		for piece in dic: 
       
 			loc = dic[piece]
-      	                #if a pawn has reached it's correct end row
+      	              
 			if loc[0] == end_row and piece[1] == 'P':
-      	         		#if there is less than 2 knight alive, promote the pawn into a knight
+      	         
 				if counter < 2:
 			
 					del dic[piece]
@@ -292,15 +254,19 @@ def check_knight(dic):
 					mp = piece
         
 		return dic, mp
-#save game			
-def save_game(ai, human):
-	
-	ai.save_grid('ai.apoc')
-	human.save_grid('human.apoc')
-	
+			
 
 
-#new game			
 def new_game():
 	
-	new_game = gui.ApocalypseGUI(960, 720)				
+	new_game = gui.ApocalypseGUI(960, 720, 'new')				
+
+	
+	
+	
+	
+#def load_game():
+	#new_game.dic_human = dict(new_game.human_board.load_grid('human.apoc'))
+	#new_game.Sdic_ai = dict(ai.board.load_grid('ai.apoc'))	
+	#new_game.('load', new_game.human_board.load_char('human.apoc'))
+		
