@@ -9,60 +9,86 @@ KNIGHT_MOVE = [[2,1], [2,-1], [-2,1], [-2,-1], [1,2], [1,-2], [-1,2], [-1,-2]]
 
 #Grid Class
 
-class Grid:
+class State:
 	def __init__(self):
-	
-
+		
+		self.dic = {}
+		self.char = 'none'
+		self.color = 'white'
+		self.penalty = 0
 		self.board = [[b,b,b,b,b], \
                 [b,b,b,b,b], \
                 [b,b,b,b,b], \
                 [b,b,b,b,b], \
                 [b,b,b,b,b]]
+				
+				
 	
 
-	def save_grid(self, name, char):
-	# Saves the grid to an open file
-	
-		write = open(name, 'w')
+	def save_state(self, file):
 		
 		#Save the character and ending the line.
-		write.write(str(char))
-		write.write('\n')
+		file.write('###CHAR###\n'+str(self.char)+'\n')
+		file.write('###COLOR###\n'+self.color + '\n')
+		file.write('###PENALTY POINTS###\n'+str(self.penalty)+'\n')
 		
-		for x in range(0, GRID_HEIGHT):
-			for y in range(0, GRID_WIDTH):
-				write.write(self.board[x][y] + ',')
-			write.write('\n')
-		write.close()
+		file.write('###PIECES###\n')
+		file.write(str(len(self.dic)) + '\n')
+		for i in self.dic:
+			
+			file.write(i+'\n')
+			for k in range(len(self.dic[i])):
+				file.write(str(self.dic[i][k]))
+			file.write('\n')
+		
+		'''file.write('###BOARD###\n')
+		for x in range(GRID_HEIGHT):
+		
+			for y in range(GRID_WIDTH):
+			
+				file.write(self.board[x][y])
+				
+			file.write('\n')'''
+
 		
 
 		
 	# Used for loading a grid from a file 
-	def load_grid(self, name):
-		self.tempgrid = [[b]*GRID_WIDTH for i in range(GRID_HEIGHT)]
-		tempdic = {}
-		read = open(name, 'r')
-		charline = read.readline()
-		for  x in range(0, GRID_HEIGHT):
-			line = read.readline()
-			line = line.split(',')
-			for y in range(0, GRID_WIDTH):
-				gridvar = line[y]
-				self.tempgrid[x][y] = gridvar
-				if self.tempgrid[x][y] != b:
-					tempdic[self.tempgrid[x][y]] = [x, y]
+	def load_state(self, file):
 		
-		read.close()
-		return tempdic
-	
+		self.dic = {}
+		
+		try:
+			file.readline()
+			self.char = int(file.readline()[:-1])
+			print(self.char)
+			file.readline()
+			self.color = file.readline()[:-1]
+		
+			file.readline()
+			self.penalty = int(file.readline()[:-1])
+			
+			file.readline()
+			
+			for i in range(int(file.readline()[:-1])):
+			
+				key = file.readline()[:-1]
+				
+				loc = file.readline()[:-1]
+				
+				if loc != 'dead':
+					loc = list(loc)
+				
+					for n in range(len(loc)):
+						loc[n] = int(loc[n])
+					
+				self.dic[key] = loc
+				
+			self.board = recreate_grid(self.dic)
+			
+		except ValueError:
+			return True
 
-	def load_char(self, name):
-		
-		read = open(name, 'r')
-		read.seek(0)
-		char = read.readline()
-		read.close()
-		return char
 		
 	#initialize board 
 	def setup_board(self, piece_loc):
@@ -265,9 +291,8 @@ def new_game():
 	
 	
 	
-def load_game():
-	new_game = gui.ApocalypseGUI(960, 720, 'load')
-	new_game.dic_human = dict(new_game.human_board.load_grid('human.apoc'))
-	new_game.dic_ai = dict(ai.board.load_grid('ai.apoc'))	
-	new_game.done_setup('load', new_game.human_board.load_char('human.apoc'))
+#def load_game():
+	#new_game.dic_human = dict(new_game.human_board.load_grid('human.apoc'))
+	#new_game.Sdic_ai = dict(ai.board.load_grid('ai.apoc'))	
+	#new_game.('load', new_game.human_board.load_char('human.apoc'))
 		
