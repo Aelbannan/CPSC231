@@ -2,18 +2,18 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 import functools
 import grid
 import ai
 import random
 import sys
-import audio
+#import audio
 
 # fonts
 big_font = ('Verdana', 16, 'bold')
 little_font = ('Trebuchet MS', 10)
 
-penalty = 0 # penalty points
 fps = 10
 anim_length = 4
 
@@ -21,92 +21,49 @@ anim_length = 4
 class ApocalypseGUI:
 	
 	### Initialization ###
-	def __init__(self, w, h, instance):		
+	def __init__(self, w, h):		
 		
-		if instance == 'new':
-			self.BASIC_UNIT = 64 # basic unit
-			self.CON_LINES = 12 # num of lines in console
-			self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
+		self.BASIC_UNIT = 64 # basic unit
+		self.CON_LINES = 12 # num of lines in console
+		self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
+		
+		
+		# The board for the human
+		self.human_state = grid.State() 
+		ai.state = grid.State() # ai board
+		
+		# Human piece and it's co-ordinates
+		self.cur_piece = ''
+		self.last_x = 0
+		self.last_y = 0
+		
+		# Create the main window
+		self.root = Tk()
+		self.root.title('Apocalypse')
+		
+		# Make the screen size stay the same
+		self.root.minsize(w,h)
+		self.root.maxsize(w,h)
+		
+		# Save width and height
+		self.w = w
+		self.h = h
 			
-			
-			# The board for the human
-			self.human_board = grid.Grid() 
-			ai.board = grid.Grid() # ai board
-			
-			# Human piece and it's co-ordinates
-			self.cur_piece = ''
-			self.last_x = 0
-			self.last_y = 0
-			self.char = 'none'
-			self.color = 'white'
-			
-			# Create the main window
-			self.root = Tk()
-			self.root.title('Apocalypse')
-			
-			# Make the screen size stay the same
-			self.root.minsize(w,h)
-			self.root.maxsize(w,h)
-			
-			# Save width and height
-			self.w = w
-			self.h = h
 				
-					
-			# Load sprites
-			self.load_resources()
-			
-			# Make the titlescreen
-			self.setup_titlescreen()
-			
-			# Make the menubar
-			self.load_menubar()
-			# Tkinter loop
-			self.root.mainloop()
-			
-		elif instance == 'load':
-			self.BASIC_UNIT = 64 # basic unit
-			self.CON_LINES = 12 # num of lines in console
-			self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
+		# Load sprites
+		self.load_resources()
+		
+		# Make the titlescreen
+		self.setup_titlescreen()
+		
+		# Make the menubar
+		self.create_menubar()
+		
+		# Tkinter loop
+		self.root.mainloop()
 			
 			
-			# The board for the human
-			self.human_board = grid.Grid() 
-			ai.board = grid.Grid() # ai board
-			
-			# Human piece and it's co-ordinates
-			self.cur_piece = ''
-			self.last_x = 0
-			self.last_y = 0
-			self.char = 'none'
-			self.color = 'white'
-			
-			# Create the main window
-			self.root = Tk()
-			self.root.title('Apocalypse')
-			
-			# Make the screen size stay the same
-			self.root.minsize(w,h)
-			self.root.maxsize(w,h)
-			
-			# Save width and height
-			self.w = w
-			self.h = h
-				
-					
-			# Load sprites
-			self.load_resources()
-			
-			#Load the game
-			self.setup_titlescreen()
-			
-			
-			# Make the menubar
-			self.load_menubar()
-			# Tkinter loop
-			self.root.mainloop()
-			
-	def load_menubar(self):
+	def create_menubar(self):
 		
 		#Creates a Menu Bar
 		self.menubar = Menu(self.root)
@@ -115,92 +72,73 @@ class ApocalypseGUI:
 		self.filemenu = Menu(self.root, tearoff=0)
 		
 		#Adds 'commands' options in the menu
-		self.filemenu.add_command(label="Difficulty", command = self.get_difficulty)
-		self.filemenu.add_command(label="New", command = self.do_new)
+		self.filemenu.add_command(label="New Game", command = self.new_game, state = DISABLED)
 		self.filemenu.add_separator()
-		self.filemenu.add_command(label="Save", command = self.do_save)
-		self.filemenu.add_command(label="Load", command = self.do_load)
+		#self.filemenu.entryconfig(0, state = DISABLED)
+		self.filemenu.add_command(label="Save Game", command = self.save_game, state = DISABLED)
+		self.filemenu.add_command(label="Load Game", command = self.load_game)
 		self.filemenu.add_separator()
-		self.filemenu.add_command(label="Exit", command = self.do_exit)
-		
+		self.filemenu.add_command(label="Exit", command = sys.exit)
 		#Adds filemenu to menubar
 		self.menubar.add_cascade(label="File", menu=self.filemenu)
+		
+		
+		#Creates a file sub-menu 
+		self.opmenu = Menu(self.root, tearoff=0)
+		self.opmenu.add_command(label="Difficulty", command = functools.partial(Popup_Difficulty, self), state = DISABLED)
+		#Adds filemenu to menubar
+		self.menubar.add_cascade(label="Options", menu=self.opmenu)
 		
 		#Init
 		self.root.config(menu=self.menubar)
 	
-	def do_load(self):
-		global root
-		self.root.destroy()
-		grid.load_game()
+	  #########################################
+######## MENU FUNCTIONS ########################################################
+	#########################################
+	 
+	def load_game(self):
 		
-	def do_save(self):
-
-		self.human_board.save_grid('human.apoc', self.char)
-		ai.board.save_grid('ai.apoc', self.char)
+		try:
+			file = open(filedialog.askopenfilename( defaultextension = '.apoc', filetypes = [('Apocalypse Save', '*.apoc')]))
 		
-	def do_new(self):
+		
+			file.readline()
+			if self.human_state.load_state(file):
+				messagebox.showinfo('Error', 'Save data is corrupt')
+			if ai.state.load_state(file):
+				messagebox.showinfo('Error', 'Save data is corrupt2')
+		
+			file.close()
+		
+		except IOError:
+			
+			messagebox.showinfo('Error', 'There was an error while loading the save file.')
+			
+		
+		
+	def save_game(self):
+	
+		file = filedialog.asksaveasfile(mode = 'w', defaultextension = '.apoc', filetypes = [('Apocalypse Save', '*.apoc')])
+		
+		file.write('~~~~APOCALYPSE SAVE FILE V1.0~~~~\n')
+		self.human_state.save_state(file)
+		ai.state.save_state(file)
+		
+		file.close()
+		
+	def new_game(self):
 		global root
 		self.root.destroy()
 		grid.new_game()
-
-	#Exits the program
-	def do_exit(self):
-		global root
-		self.root.destroy()
 	
-	#Difficulty slider, Function is the new dialog that pops up.... 
-	def get_difficulty(self):
-		
-		#Var set
-		self.scaledifficulty = 0
-	
-		#Create TopLevel - Dialog and set size
-		self.window = Toplevel(self.root, width = 420, height= 240) #TopLevel Dialog created with a set width and height
-		self.window.title('Set the difficulty') #Give it a title
-		
-		#Create a frame and place it
-		self.diff_frame = ttk.Frame(self.window)   #Create ttk Frame within parent window
-		self.diff_frame.place(x = 0, y = 0, width = 420, height = 240) # Place diff_frame with set width and height
-		
-		#Create title text. 
-		self.ttext1 = ttk.Label(self.diff_frame, font = big_font, text= "Difficulty Slider: ") #Label created with text desired
-		self.ttext1.place(x=210, y=15, anchor = CENTER) #Placing Title Text, with a center justification
-		
-		#Create a slider, and give the variable ther value of the slider
-		self.scale = ttk.Scale(self.diff_frame, from_=0, to=8, orient =HORIZONTAL, value = ai.difficulty) #Creates scale and gives it the value of the current AI. 
-		self.scale.place(x = 210, y =60 , anchor=CENTER, height = 30, width = 240, ) #Places slider 
-
-		#Adds a label with information related to the difficulty of the ai; Disclaimer. See text above for a more thorough explanation of what each line does. 
-		self.sctext1 = ttk.Label(self.diff_frame, text="The slider controls the difficulty of the AI. Please note that any ", font = little_font)
-		self.sctext1.place(x = 210, y = 100, anchor = CENTER)
-		self.sctext2 = ttk.Label(self.diff_frame, text="value over 4 will take a huge amount of computation.", font = little_font)
-		self.sctext2.place(x = 210, y = 120, anchor = CENTER)
-		self.sctext3 = ttk.Label(self.diff_frame, text="So use with caution.", font = little_font)
-		self.sctext3.place(x = 210, y = 140, anchor = CENTER)
-		
-		#Confirming that they what they just did....
-		self.ok_button = ttk.Button(self.diff_frame, text = 'Okay', command = self.do_difficulty) #When button pressed it activates the method do_difficulty within the class
-		self.ok_button.place(x =320, y =200, anchor = NW) #Place button,  
-	
-	#Does the action of the changing the difficulty
-	def do_difficulty(self):
-		
-		#Gets the value of the scale before we get rid of it. 
-		self.diff = self.scale.get()
-		
-		#Destroys the window that we no longer need
-		self.window.destroy()
-		
-		#Sets ai difficulty equal to the slider
-		ai.difficulty = int(self.diff)
+	##########################################
 
 	def load_resources(self):
 		
 		# background images
 		self.title_bac = (PhotoImage(file = 'resources/images/TitleScreen0.gif'))
 		self.new_bac = (PhotoImage(file = 'resources/images/NewScreen.gif'))
-		self.char_bac = (PhotoImage(file = 'resources/images/CharSelect.gif'))
+		self.human_state.char_bac = (PhotoImage(file = 'resources/images/CharSelect.gif'))
 		self.main_bac = (PhotoImage(file = 'resources/images/GameScreen.gif'))
 		
 		# These lists will hold the images
@@ -287,13 +225,13 @@ class ApocalypseGUI:
 				#if (i%2)==(j%2):
 					#block_color = 0
 					
-				if self.human_board.board[i][j] != grid.b:
+				if self.human_state.board[i][j] != grid.b:
 				
-					piece = self.human_board.board[i][j]
+					piece = self.human_state.board[i][j]
 					
-				elif ai.board.board[i][j] != grid.b:
+				elif ai.state.board[i][j] != grid.b:
 				
-					piece = ai.board.board[i][j]
+					piece = ai.state.board[i][j]
 					
 				else:
 					piece = ''
@@ -354,25 +292,15 @@ class ApocalypseGUI:
 		self.bac_canvas.bind('<1>', self.new_game_clicked) # so we can do that fancy click to start
 		
 		#Plays start notification
-		audio.play_music('start.wav')
+		#audio.play_music('start.wav')
 	
 	def new_game_clicked(self, event):
 		if 625 <= event.x <= 840 and 460 <= event.y <= 535:
 			self.bac_canvas.delete('bac')
 			
 			self.bac_canvas.unbind('<1>')
-			self.bac_canvas.create_image(0, 0, image = self.char_bac, anchor = NW, tag = 'bac') # add spiffy background
+			self.bac_canvas.create_image(0, 0, image = self.human_state.char_bac, anchor = NW, tag = 'bac') # add spiffy background
 			
-			#self.bac_canvas.create_text(self.w/2,16, font = big_font, text = '[CHOOSE YOUR TEAM AND CHARACTER]', fill = 'white', tag = 'pick' )
-		
-		#self.bac_canvas.create_text(self.w/4,64, font = big_font, text = 'WHITE', fill = 'white', tag = 'white' )
-		
-		#self.bac_canvas.create_text((3 * self.w)/4,64, font = big_font, text = 'BLACK', fill = 'white', tag = 'black' )
-
-		#color = OptionMenu(self.root, None, 'white', 'black')
-		#color.place(x = 440, y = 650, width = 40, height = 20)
-		
-		#self.char = []
 		
 			for i in range(4):
 				for j in range(6):
@@ -381,7 +309,6 @@ class ApocalypseGUI:
 						row = 0
 						
 					self.bac_canvas.create_image(row + 32 + j * 156, 96 + i *  116, image = self.bac_chars[0], anchor = NW, tag = 'bac'+str(i)+str(j))
-					#self.bac_canvas.tag_bind('board'+str(i)+str(j), '<Button-1>', functools.partial(self.board_clicked, i * 6 + j))
 					
 					self.bac_canvas.create_image(row + 32 + j * 156, 96 + i *  116, image = self.spr_chars[i * 6 + j], anchor = NW, tag = 'char'+str(i)+str(j))
 					self.bac_canvas.tag_bind('char'+str(i)+str(j), '<Button-1>', functools.partial(self.choose_char, i , j))
@@ -393,43 +320,45 @@ class ApocalypseGUI:
 			self.bac_canvas.create_image(3*self.w/4 + 72, self.h - 64, image = self.done_button, tag = 'done')
 			self.bac_canvas.tag_bind('done', '<Button-1>', functools.partial(self.choose_char, 199 , 0))
 			
-
-
-			
-		'''for i in range(4):
-			for j in range(3):
-			
-				button = ttk.Button(self.root, image = self.white_chars[i * 3 + j] , command = functools.partial(self.choose_color, i * 3 + j )) # functools replaces lambda
-				button.place(x = 61 + j*116, y = 96 + i*116, height = 106, width = 106)
-				self.char.append(button)
-				
-				button = ttk.Button(self.root, image = self.black_chars[i * 3 + j] , command = functools.partial(self.choose_color, i * 3 + j )) # functools replaces lambda
-				button.place(x = self.w/2 + 61 + j*116, y = 96 + i*116, height = 106, width = 106)
-				self.char.append(button)'''
 		
 	def choose_char(self, a, b, event):
+	
 		if a == 199:
-			if self.char != 'none':
-				self.done_setup(self.color, self.char)
+		
+			if self.human_state.char != 'none':
+				self.done_setup(self.human_state.color, self.human_state.char)
+				
 		elif a == 99:
-			if self.color == 'white':
+		
+			if self.human_state.color == 'white':
+			
 				self.bac_canvas.itemconfig('yin', image = self.spr_yin[1])
-				self.color = 'black'
+				self.human_state.color = 'black'
+				
 			else:
+			
 				self.bac_canvas.itemconfig('yin', image = self.spr_yin[0])
-				self.color = 'white'
+				self.human_state.color = 'white'
+				
 		else:
-			self.char = a * 6 + b
+			self.human_state.char = a * 6 + b
+			ai.state.char = 0
 			
 			for i in range(4):
+			
 				for j in range(6):
+				
 					self.bac_canvas.itemconfig('bac'+str(i)+str(j), image = self.bac_chars[0])
 					
 			self.bac_canvas.itemconfig('bac'+str(a)+str(b), image = self.bac_chars[1])
 
 		
 	def done_setup(self, color, char):
-
+	
+		self.filemenu.entryconfig(0, state = NORMAL)
+		self.filemenu.entryconfig(2, state = NORMAL)
+		self.opmenu.entryconfig(0, state = NORMAL)
+		
 		for i in range(4):
 				for j in range(6):
 					self.bac_canvas.delete('char'+str(i)+str(j))
@@ -441,31 +370,25 @@ class ApocalypseGUI:
 		if color == 'white':
 			
 			self.load_pieces(char, 0)
-			self.dic_ai = { 'BP1':[1,0],'BP2':[0,1], 'BP3':[0,2], 'BP4':[0,3], 'BP5':[1,4], 'BK1':[0,0], 'BK2':[0,4]}
-			self.dic_human = { 'WP1':[3,0],'WP2':[4,1], 'WP3':[4,2], 'WP4':[4,3], 'WP5':[3,4], 'WK1':[4,0], 'WK2':[4,4] }
+			ai.state.dic = { 'BP1':[1,0],'BP2':[0,1], 'BP3':[0,2], 'BP4':[0,3], 'BP5':[1,4], 'BK1':[0,0], 'BK2':[0,4]}
+			self.human_state.dic = { 'WP1':[3,0],'WP2':[4,1], 'WP3':[4,2], 'WP4':[4,3], 'WP5':[3,4], 'WK1':[4,0], 'WK2':[4,4] }
 
 		
 		elif color == 'black':
 			
 			self.load_pieces(0, char)
-			self.dic_human = { 'BP1':[1,0],'BP2':[0,1], 'BP3':[0,2], 'BP4':[0,3], 'BP5':[1,4], 'BK1':[0,0], 'BK2':[0,4]}
-			self.dic_ai = { 'WP1':[3,0],'WP2':[4,1], 'WP3':[4,2], 'WP4':[4,3], 'WP5':[3,4], 'WK1':[4,0], 'WK2':[4,4] }
+			self.human_state.dic = { 'BP1':[1,0],'BP2':[0,1], 'BP3':[0,2], 'BP4':[0,3], 'BP5':[1,4], 'BK1':[0,0], 'BK2':[0,4]}
+			ai.state.dic = { 'WP1':[3,0],'WP2':[4,1], 'WP3':[4,2], 'WP4':[4,3], 'WP5':[3,4], 'WK1':[4,0], 'WK2':[4,4] }
 			#messagebox.showinfo('', 'You are black')
 			
-		elif color == 'load':
-			pass
-		# setup the boards
-		ai.board.setup_board(self.dic_ai)
-		self.human_board.setup_board(self.dic_human)
- 
-		# send the ai dictionary to ai
-		ai.dic_ai = dict(self.dic_ai)	
-		
+		ai.state.setup_board(ai.state.dic)
+		self.human_state.setup_board(self.human_state.dic)
+			
 		self.setup_game()
 		
 	def setup_game(self, *args):
 		#self.choose_player()
-		audio.play_music("indusalarm.wav")
+		#audio.play_music("indusalarm.wav")
 		self.bac_canvas.delete('bac')
 
 		self.bac_canvas.create_image(0, 0, image = self.main_bac, anchor = NW, tag = 'bac') # add spiffy background
@@ -550,31 +473,31 @@ class ApocalypseGUI:
 		
 		#print('hey',self.cur_piece)
 		if self.cur_piece == '': # if you haven't picked a piece yet
-			audio.play_music("pickup.wav")
-			for e in self.dic_human: # loop thru human dict
+			#audio.play_music("pickup.wav")
+			for e in self.human_state.dic: # loop thru human dict
 				
-				if self.human_board.board[x][y] == e: # if this clicked piece is one of yours!!!!
+				if self.human_state.board[x][y] == e: # if this clicked piece is one of yours!!!!
 					
-					self.cur_piece = self.human_board.board[x][y] # set it current piece (so we can go to phase 2)
+					self.cur_piece = self.human_state.board[x][y] # set it current piece (so we can go to phase 2)
 					self.last_x = x # save our position
 					self.last_y = y # ^ ye
 					
 					self.output_text('You selected ' + self.cur_piece + ' at (' + str(x) +  ',' +str(y) + ')') # wut dis do? lol output
 					
 					
-		elif self.cur_piece == self.human_board.board[x][y]: # if you click on the piece you already selected, deselect it!
-			audio.play_music("putdown.wav")	
+		elif self.cur_piece == self.human_state.board[x][y]: # if you click on the piece you already selected, deselect it!
+			#audio.play_music("putdown.wav")	
 			self.output_text('You deselected ' + self.cur_piece) 		
 			
 			self.cur_piece = '' # i aint select no darn piece
 			
 			
 		else: # else
-			audio.play_music("alert.wav")
-			if self.human_board.validate_location(self.last_x, self.last_y, x, y, self.cur_piece, ai.board.board): # if valid move
+			#audio.play_music("alert.wav")
+			if self.human_state.validate_location(self.last_x, self.last_y, x, y, self.cur_piece, ai.state.board): # if valid move
 			
 				# get the ai move first (so it doesn't cheat ;) )
-				dic_ai, piece_ai = ai.get_move(self.dic_human)
+				dic_ai, piece_ai = ai.get_move(self.human_state.dic)
 
 				# if ai cant find any moves, it must be stalemate (I trust my ai)
 				if dic_ai == False:
@@ -585,18 +508,18 @@ class ApocalypseGUI:
 				self.output_text('You moved ' + self.cur_piece + ' to (' + str(x) +  ',' +str(y) + ')')
 
 				# move human piece
-				self.dic_human = self.human_board.move_piece(x,y,self.cur_piece, self.dic_human)
+				self.human_state.dic = self.human_state.move_piece(x,y,self.cur_piece, self.human_state.dic)
 				
 				# now actually make the moves (let the carnage begin \(>-<)/ )
-				self.dic_human, dic_ai = grid.finalize_move( self.dic_human, dic_ai, self.cur_piece, piece_ai)
-				#print(self.dic_human, dic_ai)
+				self.human_state.dic, dic_ai = grid.finalize_move( self.human_state.dic, dic_ai, self.cur_piece, piece_ai)
+				#print(self.human_state.dic, dic_ai)
 				
 				# check if the peasants are worthy of knighthood
 				dic_ai, mb = grid.check_knight(dic_ai)
 				
 				# make the boards used for display from dicts
-				self.human_board.board = grid.recreate_grid(self.dic_human)
-				ai.board.board = grid.recreate_grid(ai.dic_ai)
+				self.human_state.board = grid.recreate_grid(self.human_state.dic)
+				ai.state.board = grid.recreate_grid(ai.state.dic)
 				
 				# if you have 2 knights, put random
 				if mb != 'none':
@@ -604,7 +527,7 @@ class ApocalypseGUI:
 					x = random.randint(0, grid.GRID_HEIGHT)
 					y = random.randint(0, grid.GRID_WIDTH)
 				
-					while self.human_board.board[x][y] != grid.b and ai.board.board[x][y] != grid.b:
+					while self.human_state.board[x][y] != grid.b and ai.state.board[x][y] != grid.b:
 						x = random.randint(0, grid.GRID_HEIGHT)
 						y = random.randint(0, grid.GRID_WIDTH)
 						
@@ -612,23 +535,23 @@ class ApocalypseGUI:
 					self.output_text('AI relocated ' + mb + ' to (' + str(x) +  ',' +str(y) + ')')
 					
 				# k
-				self.dic_human, mb = grid.check_knight(self.dic_human)
+				self.human_state.dic, mb = grid.check_knight(self.human_state.dic)
 				
 				# if you have 2 knights, ask to relocate
 				if mb != 'none':
-					a = Popup_Knight(self.root, mb, self.dic_human, self)
+					a = Popup_Knight(self.root, mb, self.human_state.dic, self)
 					
 				# send the ai dictionary back (it got updated)
 				ai.dic_ai = dic_ai
 				
 				# make the boards used for display from dicts
-				self.human_board.board = grid.recreate_grid(self.dic_human)
-				ai.board.board = grid.recreate_grid(ai.dic_ai)
+				self.human_state.board = grid.recreate_grid(self.human_state.dic)
+				ai.state.board = grid.recreate_grid(ai.dic_ai)
 				
 				#self.update_grid()
 					
 				# if WE HAVE A WINNER!
-				won = grid.get_winner(self.dic_human, ai.dic_ai)
+				won = grid.get_winner(self.human_state.dic, ai.dic_ai)
 				
 				if won == 'ai': # if my great ai won (and it will ;) )
 				
@@ -645,20 +568,18 @@ class ApocalypseGUI:
 					messagebox.showinfo('', 'Stalemate!')
 					sys.exit()
 				
-				#print(grid.recreate_grid(self.dic_human))
+				#print(grid.recreate_grid(self.human_state.dic))
 				#print(grid.recreate_grid(ai.dic_ai))
 				
 				self.cur_piece = '' # you already moved so why u need dat piece homie?
 				
 			else:
-			
-				global penalty # you goin to penalty!!!!!!!!
 				
 				self.output_text('You earned a penalty point') # oh no!!!	
 				
-				penalty += 1 # stacks on stacks
+				self.human_state.penalty += 1 # stacks on stacks
 				
-				if penalty == 2: # red card + 6 fouls :/
+				if self.human_state.penalty == 2: # red card + 6 fouls :/
 				
 					messagebox.showinfo(' ', 'You Lose! :(') # you lose
 					sys.exit() # and your kicked out! <(;-;)>
@@ -669,8 +590,8 @@ class ApocalypseGUI:
 		#print(self.cur_piece)
 		
 	#def update_board(self, dic):
-		#self.dic_human = dic
-		#self.human_board.board = grid.recreate_grid(self.dic_human)	
+		#self.human_state.dic = dic
+		#self.human_state.board = grid.recreate_grid(self.human_state.dic)	
 		
 	### pretty much, this is print() for our console ###
 	def output_text(self,string):
@@ -731,8 +652,11 @@ class Popup_Knight:
 	def button_click(self):
 	
 		# get row/col from entries (can only handle integers)
-		row = int(self.row_entry.get()) - 1
-		col = int(self.col_entry.get()) - 1
+		try:
+			row = int(self.row_entry.get()) - 1
+			col = int(self.col_entry.get()) - 1
+		except ValueError:
+			messagebox.showinfo('Not a number', 'Please enter numbers from 1 to 5')
 		
 		# recreate dem 2 boards...
 		board = grid.recreate_grid(self.dic)
@@ -765,3 +689,47 @@ class Popup_Knight:
 		
 			messagebox.showinfo('!', 'Not on board')
 
+#### Lets you change the AI difficulty ####
+
+class Popup_Difficulty:
+	def __init__(self, gui):
+		
+		#self.scaledifficulty = 0
+	
+		#Create TopLevel - Dialog and set size
+		self.window = Toplevel(gui.root, width = 420, height= 240) #TopLevel Dialog created with a set width and height
+		self.window.title('Set the difficulty') #Give it a title
+		
+		self.window.grab_set()
+		
+		#Create a frame and place it
+		self.diff_frame = ttk.Frame(self.window)   #Create ttk Frame within parent window
+		self.diff_frame.place(x = 0, y = 0, width = 420, height = 240) # Place diff_frame with set width and height
+		
+		#Create title text. 
+		self.ttext1 = ttk.Label(self.diff_frame, font = big_font, text= "Difficulty Slider: ") #Label created with text desired
+		self.ttext1.place(x=210, y=15, anchor = CENTER) #Placing Title Text, with a center justification
+		
+		#Create a slider, and give the variable ther value of the slider
+		self.scale = Scale(self.diff_frame, from_=1, to=4, orient =HORIZONTAL, tickinterval = 1) #Creates scale and gives it the value of the current AI. 
+		self.scale.place(x = 210, y =60 , anchor=CENTER, height = 32, width = 240, ) #Places slider 
+		self.scale.set(ai.difficulty/2)
+		
+		#Adds a label with information related to the difficulty of the ai; Disclaimer. See text above for a more thorough explanation of what each line does. 
+		self.sctext1 = ttk.Label(self.diff_frame, text="The slider controls the difficulty of the AI. Please note that any", font = little_font)
+		self.sctext1.place(x = 210, y = 100, anchor = CENTER)
+		self.sctext2 = ttk.Label(self.diff_frame, text="value over 4 will take a huge amount of computation.", font = little_font)
+		self.sctext2.place(x = 210, y = 120, anchor = CENTER)
+		self.sctext3 = ttk.Label(self.diff_frame, text="So use with caution.", font = little_font)
+		self.sctext3.place(x = 210, y = 140, anchor = CENTER)
+		
+		#Confirming that they what they just did....
+		self.ok_button = ttk.Button(self.diff_frame, text = 'Okay', command = self.set_difficulty) #When button pressed it activates the method do_difficulty within the class
+		self.ok_button.place(x =320, y =200, anchor = NW) #Place button,  
+		
+	def set_difficulty(self):
+		
+		ai.difficulty = int(self.scale.get()) * 2
+		print(ai.difficulty)
+		
+		self.window.destroy()
