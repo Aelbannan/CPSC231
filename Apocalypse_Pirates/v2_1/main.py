@@ -7,4 +7,4 @@
 import gui
 import grid
 
-GUI = gui.ApocalypseGUI(960, 720, 'new')
+GUI = gui.ApocalypseGUI(960, 720)
