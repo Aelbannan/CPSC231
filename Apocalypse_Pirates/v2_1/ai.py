@@ -369,7 +369,7 @@ def get_move(dic_human):
 	# setup a tree and expand it
 	top = node()
 	top.state = 'original'
-	top.dic_ai = dic_ai
+	top.dic_ai = state.dic
 	top.dic_human = dic_human
 
 	top.grow_tree()
@@ -378,7 +378,19 @@ def get_move(dic_human):
 	
 	if override != []: # if there is a move that will lead to a checkmate
 		
-		chosen_node = override[0].get_ancestor(3) #get the first move
+		best = best_moves(override)
+		
+		if len(best) > 1:
+		
+			num = random.randint(0, len(best) - 1) # pick randomly
+		
+		else:
+			
+			num = 0
+		
+		choose = best[num]
+		
+		chosen_node = override[choose].get_ancestor(3) #get the first move
 		
 	elif possible_moves != []: # get best moves
 
@@ -397,7 +409,7 @@ def get_move(dic_human):
 	# if game is won, will throw error, because it can't expand tree
 	# these prevent the loss of fun. All about customer service!
 	try:
-		dic_ai[chosen_node.last_piece] = [chosen_node.new_row, chosen_node.new_col] 
+		state.dic[chosen_node.last_piece] = [chosen_node.new_row, chosen_node.new_col] 
 	except ValueError:
 		return False, False
 	except AttributeError:
@@ -407,14 +419,14 @@ def get_move(dic_human):
 	#print(dic_ai[chosen_node.last_piece])
 	
 	# update ai board
-	board.board = grid.recreate_grid(chosen_node.dic_ai)
+	state.board = grid.recreate_grid(chosen_node.dic_ai)
 	#print(override)
 	
 	# reset moves
 	possible_moves = []
 	override = []
 	
-	return dic_ai, chosen_node.last_piece
+	return state.dic, chosen_node.last_piece
 
 # debugging
 """for e in possible_moves:
