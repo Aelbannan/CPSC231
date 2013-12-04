@@ -1,4 +1,0 @@
-So the program runs, what I've changed is:
- - A 2-D GRID
-
-That means the majority of the program has been changed. There initialization still has problems so, whoever is looking at it try fixing it. More so, we need to a class come mondays class. I've simply neglected it, but if someone wants to get started go ahead. But fix the grid problem I listed earlier. It does not display the pawns and the knights in the correct place for the black player. 
