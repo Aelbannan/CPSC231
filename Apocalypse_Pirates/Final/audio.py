@@ -10,7 +10,10 @@
 
 
 #Imports
-import winsound
+import sys
+if sys.platform == 'win32':
+	import winsound
+
 import os
 
 def play_music(file):

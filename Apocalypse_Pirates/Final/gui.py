@@ -229,7 +229,7 @@ class ApocalypseGUI:
 			if self.human_state.load_state(file):
 				messagebox.showinfo('Error', 'Save data is corrupt')
 			if ai.state.load_state(file):
-				messagebox.showinfo('Error', 'Save data is corrupt2')
+				messagebox.showinfo('Error', 'Save data is corrupt')
 		
 			file.close()
 			
@@ -324,6 +324,11 @@ class ApocalypseGUI:
 	def new_game_clicked(self, event):
 	
 		self.cur_piece = ''
+		
+		self.human_state.board = [[grid.b for i in range(grid.GRID_HEIGHT)]for j in range(grid.GRID_WIDTH)]
+		ai.state.board = [[grid.b for i in range(grid.GRID_HEIGHT)]for j in range(grid.GRID_WIDTH)]
+		
+		self.human_state.color = 'white'
 		
 		if event == 'menu':
 			pass
@@ -652,7 +657,7 @@ class ApocalypseGUI:
 				
 				self.human_state.penalty += 1 # stacks on stacks
 				
-				audio.play_beep("SystemHand") #replace
+				#audio.play_beep("SystemHand") #replace
 				
 				if self.human_state.penalty == 2: # red card + 6 fouls :/
 				
