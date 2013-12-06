@@ -92,6 +92,8 @@ class ApocalypseGUI:
 		for c in range(4):
 			self.spr_choose.append((PhotoImage(file = 'resources/images/chosen'+str(c)+'.gif')))
 		
+		self.spr_penalty = (PhotoImage(file = 'resources/images/penalty.gif'))
+		
 		self.bac_chars.append((PhotoImage(file = 'resources/images/char_bac.gif')))
 		self.bac_chars.append((PhotoImage(file = 'resources/images/char_bac_selected.gif')))
 		
@@ -318,7 +320,7 @@ class ApocalypseGUI:
 		self.bac_canvas.unbind('<1>')
 		self.bac_canvas.bind('<1>', self.new_game_clicked) # so we can do that fancy click to start
 		
-		if sys.platform == 'win32' and sound.get() == 1:
+		if sound.get() == 1:
 			audio.play_music('start.wav')
 	
 	def new_game_clicked(self, event):
@@ -329,11 +331,15 @@ class ApocalypseGUI:
 		ai.state.board = [[grid.b for i in range(grid.GRID_HEIGHT)]for j in range(grid.GRID_WIDTH)]
 		
 		self.human_state.color = 'white'
+		self.human_state.penalty = 0
 		
 		if event == 'menu':
 			pass
 		elif (625 <= event.x <= 840 and 460 <= event.y <= 535):
 			pass
+		elif (625 <= event.x <= 840 and 580 <= event.y <= 830):
+			self.load_game()
+			return False
 		else:
 			return False
 			
@@ -341,7 +347,7 @@ class ApocalypseGUI:
 		
 		self.bac_canvas.unbind('<1>')
 		self.bac_canvas.create_image(0, 0, image = self.human_state.char_bac, anchor = NW, tag = 'bac') # add spiffy background
-		
+	
 	
 		for i in range(4):
 			for j in range(6):
@@ -437,6 +443,8 @@ class ApocalypseGUI:
 
 		self.bac_canvas.create_image(0, 0, image = self.main_bac, anchor = NW, tag = 'bac') # add spiffy background
 		
+		self.bac_canvas.create_image(640, 64, image = '', anchor = NW, tag = 'penalty')
+		
 		#Empty grid for buttons 
 		self.grid = []
 		
@@ -450,6 +458,7 @@ class ApocalypseGUI:
 		
 		self.board_canvas.bind('<Button-1>', self.grid_button_clicked)
 				
+		
 		
 		#Places buttons onto the empty grid
 		for i in range(grid.GRID_HEIGHT):
@@ -536,7 +545,7 @@ class ApocalypseGUI:
 				
 				if self.human_state.board[x][y] == e: # if this clicked piece is one of yours!!!!
 					
-					if sys.platform == 'win32' and sound.get() == 1:
+					if sound.get() == 1:
 						audio.play_music("pickup.wav")
 					
 					self.cur_piece = self.human_state.board[x][y] # set it current piece (so we can go to phase 2)
@@ -548,7 +557,7 @@ class ApocalypseGUI:
 					
 		elif self.cur_piece == self.human_state.board[x][y]: # if you click on the piece you already selected, deselect it!
 		
-			if sys.platform == 'win32' and sound.get() == 1:
+			if sound.get() == 1:
 				audio.play_music("putdown.wav")	
 				
 			self.output_text('You deselected ' + self.cur_piece) 		
@@ -583,7 +592,7 @@ class ApocalypseGUI:
 				self.human_state.dic, dic_ai = grid.finalize_move( self.human_state.dic, dic_ai, self.cur_piece, piece_ai)
 				#print(self.human_state.dic, dic_ai)
 				
-				if sys.platform == 'win32' and sound.get() == 1:
+				if sound.get() == 1:
 					audio.play_music("alert.wav")
 					
 				# check if the peasants are worthy of knighthood
@@ -656,7 +665,7 @@ class ApocalypseGUI:
 				self.output_text('You earned a penalty point') # oh no!!!	
 				
 				self.human_state.penalty += 1 # stacks on stacks
-				
+				self.bac_canvas.itemconfig('penalty', image = self.spr_penalty)
 				#audio.play_beep("SystemHand") #replace
 				
 				if self.human_state.penalty == 2: # red card + 6 fouls :/

@@ -17,11 +17,12 @@ if sys.platform == 'win32':
 import os
 
 def play_music(file):
-	script_dir = os.path.dirname(__file__) #Absolute directory the script is in
-	rel_path = 'resources/audio/' #The path that will never change, this is where the audio is located
-	abs_file_path = os.path.join(script_dir, rel_path, file) #This is combining the three strings together
-	winsound.PlaySound(abs_file_path, winsound.SND_ASYNC) #Playing the wave file(SND_ASYNC), and abs_file_path is the location of audio. 
+	if sys.platform == 'win32':
+		script_dir = os.path.dirname(__file__) #Absolute directory the script is in
+		rel_path = 'resources/audio/' #The path that will never change, this is where the audio is located
+		abs_file_path = os.path.join(script_dir, rel_path, file) #This is combining the three strings together
+		winsound.PlaySound(abs_file_path, winsound.SND_ASYNC) #Playing the wave file(SND_ASYNC), and abs_file_path is the location of audio. 
 	
 def play_beep(sound):
-	
-	winsound.PlaySound(sound, winsound.SND_ALIAS)
+	if sys.platform == 'win32':
+		winsound.PlaySound(sound, winsound.SND_ALIAS)
