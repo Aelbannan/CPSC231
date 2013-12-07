@@ -1,6 +1,7 @@
 #Comments go here 
 
 import gui
+import ai
 #Global Variables
 b = '[ ]'
 GRID_HEIGHT = 5
@@ -136,10 +137,11 @@ class State:
                     
                     
 ### Lets pieces kill each other n so on###               
-def finalize_move( dic_human, dic_ai, last_human, last_ai,):
+def finalize_move( dic_human, dic_ai, last_human, last_ai):
 	#print('new')
 	test_h = dict(dic_human)
 	test_a = dict(dic_ai)
+	msg = ''
 	
 	for piece_h in test_h:
 		
@@ -152,23 +154,25 @@ def finalize_move( dic_human, dic_ai, last_human, last_ai,):
 					if piece_a == last_ai:
 						#print('a')
 						if piece_h[1] == piece_a[1]:
-							#print('type1')
+							msg = ai.speak.get_speech(4)
 							dic_human[last_human] = 'dead'
 							dic_ai[last_ai] = 'dead'
 						elif piece_h[1] > piece_a[1]:
-							#print('typea')
+							msg = ai.speak.get_speech(3)
 							dic_human[last_human] = 'dead'
 						else:
-							#print('typeh')
+							msg = ai.speak.get_speech(2)
 							dic_ai[last_ai] = 'dead'
 					
 					else:
+						msg = ai.speak.get_speech(2)
 						dic_ai[piece_a] = 'dead'
 				
 				else:
+					msg = ai.speak.get_speech(3)
 					dic_human[piece_h] = 'dead'
 
-	return dic_human, dic_ai
+	return dic_human, dic_ai, msg
 	
 
 ### creates a grid from a dictionary ###								

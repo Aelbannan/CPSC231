@@ -28,6 +28,7 @@ class ApocalypseGUI:
 		self.CON_LINES = 12 # num of lines in console
 		self.CON_SIZE = self.BASIC_UNIT* 5	# console size	
 		
+		ai.speak = ai.MSG_Bot()
 		
 		# The board for the human
 		self.human_state = grid.State() 
@@ -101,7 +102,7 @@ class ApocalypseGUI:
 		self.spr_yin.append((PhotoImage(file = 'resources/images/yin1.gif')))
 		self.done_button = (PhotoImage(file = 'resources/images/done.gif'))
 
-		for i in range(24):
+		for i in range(12):
 			self.spr_chars.append((PhotoImage(file = 'resources/images/chars/char'+str(i)+'.gif')))
 			
 			
@@ -213,6 +214,8 @@ class ApocalypseGUI:
 		self.boardmenu.add_radiobutton(label="Urban Jungle", command = functools.partial(self.change_board, 4))
 		#Adds filemenu to menubar
 		
+		self.menubar.add_command(label="Help", command=functools.partial(messagebox.showinfo, 'Help', 'PAWN:\nYou have five of these. They move and capture like chess pawns.\n\nKNIGHT:\nYou have two of them. Moves like a chess knight\n\nLAST RANK:\nA pawn reaching the last row can be promoted to a knight, \nif you have less than two knights. Otherwise, it can be moved anywhere.\n\nGOAL:\nLeave no opponent pawns standing.'))
+		self.menubar.add_command(label = 'Credits', command = functools.partial(messagebox.showinfo, 'Credits', "Made by the APOCALYPTIC PIRATES. All rights reserved (c) \n\nSprites from: \nThe Spriter's Resource\nwww.wallpapers.com"))
 		
 		#Init
 		self.root.config(menu=self.menubar)
@@ -349,22 +352,22 @@ class ApocalypseGUI:
 		self.bac_canvas.create_image(0, 0, image = self.human_state.char_bac, anchor = NW, tag = 'bac') # add spiffy background
 	
 	
-		for i in range(4):
-			for j in range(6):
+		for i in range(3):
+			for j in range(4):
 				row = 32
 				if i % 2 == 1:
 					row = 0
 					
-				self.bac_canvas.create_image(row + 32 + j * 156, 96 + i *  116, image = self.bac_chars[0], anchor = NW, tag = 'bac'+str(i)+str(j))
+				self.bac_canvas.create_image(row + 42 + j * 248, 128 + i * 156, image = self.bac_chars[0], anchor = NW, tag = 'bac'+str(i)+str(j))
 				
-				self.bac_canvas.create_image(row + 32 + j * 156, 96 + i *  116, image = self.spr_chars[i * 6 + j], anchor = NW, tag = 'char'+str(i)+str(j))
+				self.bac_canvas.create_image(row + 42 + j * 248, 128 + i *  156, image = self.spr_chars[i * 4 + j], anchor = NW, tag = 'char'+str(i)+str(j))
 				self.bac_canvas.tag_bind('char'+str(i)+str(j), '<Button-1>', functools.partial(self.choose_char, i , j))
 		
 	
-		self.bac_canvas.create_image(self.w/4 - 72, self.h - 64, image = self.spr_yin[0], tag = 'yin')
+		self.bac_canvas.create_image(self.w/4 - 72, self.h - 96, image = self.spr_yin[0], tag = 'yin')
 		self.bac_canvas.tag_bind('yin', '<Button-1>', functools.partial(self.choose_char, 99 , 0))
 		
-		self.bac_canvas.create_image(3*self.w/4 + 72, self.h - 64, image = self.done_button, tag = 'done')
+		self.bac_canvas.create_image(3*self.w/4 + 72, self.h - 96, image = self.done_button, tag = 'done')
 		self.bac_canvas.tag_bind('done', '<Button-1>', functools.partial(self.choose_char, 199 , 0))
 			
 		
@@ -388,8 +391,8 @@ class ApocalypseGUI:
 				self.human_state.color = 'white'
 				
 		else:
-			self.human_state.char = a * 6 + b
-			ai.state.char = 0
+			self.human_state.char = a * 4 + b
+			ai.state.char = random.randint(0,9)
 			
 			for i in range(4):
 			
@@ -418,14 +421,14 @@ class ApocalypseGUI:
 		
 		if color == 'white':
 			
-			self.load_pieces(char, 0)
+			self.load_pieces(char, ai.state.char)
 			ai.state.dic = { 'BP1':[1,0],'BP2':[0,1], 'BP3':[0,2], 'BP4':[0,3], 'BP5':[1,4], 'BK1':[0,0], 'BK2':[0,4]}
 			self.human_state.dic = { 'WP1':[3,0],'WP2':[4,1], 'WP3':[4,2], 'WP4':[4,3], 'WP5':[3,4], 'WK1':[4,0], 'WK2':[4,4] }
 
 		
 		elif color == 'black':
 			
-			self.load_pieces(0, char)
+			self.load_pieces(ai.state.char, char)
 			self.human_state.dic = { 'BP1':[1,0],'BP2':[0,1], 'BP3':[0,2], 'BP4':[0,3], 'BP5':[1,4], 'BK1':[0,0], 'BK2':[0,4]}
 			ai.state.dic = { 'WP1':[3,0],'WP2':[4,1], 'WP3':[4,2], 'WP4':[4,3], 'WP5':[3,4], 'WK1':[4,0], 'WK2':[4,4] }
 			
@@ -444,6 +447,8 @@ class ApocalypseGUI:
 		self.bac_canvas.create_image(0, 0, image = self.main_bac, anchor = NW, tag = 'bac') # add spiffy background
 		
 		self.bac_canvas.create_image(640, 64, image = '', anchor = NW, tag = 'penalty')
+		
+		self.bac_canvas.create_image(self.w/4 - 48, 64, image = self.spr_chars[ai.state.char], anchor = NW, tag = 'enemychar')
 		
 		#Empty grid for buttons 
 		self.grid = []
@@ -509,6 +514,8 @@ class ApocalypseGUI:
 		self.entry_button.place(x = self.w/2 + self.BASIC_UNIT*5.5, y = self.h/2 - self.BASIC_UNIT*2 + self.CON_SIZE + 16, width = self.BASIC_UNIT, height = 24)
 		self.root.bind('<Return>', self.send_button_clicked)
 		
+		self.output_text(ai.speak.get_speech(0))
+		
 		self.update_grid(0)
 		
 		
@@ -518,7 +525,7 @@ class ApocalypseGUI:
 	
 		# Command for updating text on console
 	def send_button_clicked(self,*args):
-		self.output_text(self.entry_var.get()) #lol 1 line
+		self.output_text('YOU: ' + self.entry_var.get()) #lol 1 line
 		
 	### This is the game pree much ###
 	def grid_button_clicked(self, event):
@@ -544,6 +551,8 @@ class ApocalypseGUI:
 			for e in self.human_state.dic: # loop thru human dict
 				
 				if self.human_state.board[x][y] == e: # if this clicked piece is one of yours!!!!
+				
+					self.output_text(ai.speak.get_speech(1))
 					
 					if sound.get() == 1:
 						audio.play_music("pickup.wav")
@@ -552,7 +561,7 @@ class ApocalypseGUI:
 					self.last_x = x # save our position
 					self.last_y = y # ^ ye
 					
-					self.output_text('You selected ' + self.cur_piece + ' at (' + str(x) +  ',' +str(y) + ')') # wut dis do? lol output
+					#self.output_text('You selected ' + self.cur_piece + ' at (' + str(x) +  ',' +str(y) + ')') # wut dis do? lol output
 					
 					
 		elif self.cur_piece == self.human_state.board[x][y]: # if you click on the piece you already selected, deselect it!
@@ -560,7 +569,7 @@ class ApocalypseGUI:
 			if sound.get() == 1:
 				audio.play_music("putdown.wav")	
 				
-			self.output_text('You deselected ' + self.cur_piece) 		
+			#self.output_text('You deselected ' + self.cur_piece) 		
 			
 			self.cur_piece = '' # i aint select no darn piece
 			
@@ -577,20 +586,23 @@ class ApocalypseGUI:
 				# if ai cant find any moves, it must be stalemate (I trust my ai)
 				if dic_ai == False:
 				
-					if messagebox.askyesno('Play again?', 'Stalemate! \n Would you like to play again?'):
+					if messagebox.askyesno('Play again?', ai.speak.get_speech(7) + '\n\nStalemate! \n Would you like to play again?'):
 						self.new_game()
 					else:# you lose
 						sys.exit()
 					
 				# jus sum outbuts
-				self.output_text('You moved ' + self.cur_piece + ' to (' + str(x) +  ',' +str(y) + ')')
+				#self.output_text('You moved ' + self.cur_piece + ' to (' + str(x) +  ',' +str(y) + ')')
 
 				# move human piece
 				self.human_state.dic = self.human_state.move_piece(x,y,self.cur_piece, self.human_state.dic)
 				
 				# now actually make the moves (let the carnage begin \(>-<)/ )
-				self.human_state.dic, dic_ai = grid.finalize_move( self.human_state.dic, dic_ai, self.cur_piece, piece_ai)
+				self.human_state.dic, dic_ai, msg = grid.finalize_move( self.human_state.dic, dic_ai, self.cur_piece, piece_ai)
 				#print(self.human_state.dic, dic_ai)
+				
+				if msg != '':
+					self.output_text(msg)
 				
 				if sound.get() == 1:
 					audio.play_music("alert.wav")
@@ -636,21 +648,21 @@ class ApocalypseGUI:
 				
 				if won == 'ai': # if my great ai won (and it will ;) )
 				
-					if messagebox.askyesno('Play again?', 'You Lose! :( \n Would you like to play again?'):
+					if messagebox.askyesno('Play again?', ai.speak.get_speech(5) + '\n\nYou Lose! :( \n Would you like to play again?'):
 						self.new_game()
 					else:# you lose
 						sys.exit()
 					
 				elif won == 'human': # if you fluked out somehow :p
 				
-					if messagebox.askyesno('Play again?', 'You win! :) \n Would you like to play again?'):
+					if messagebox.askyesno('Play again?', ai.speak.get_speech(6) + '\n\nYou win! :) \n Would you like to play again?'):
 						self.new_game()
 					else:# you lose
 						sys.exit()
 						
 				elif won == 'draw': # if it is stalemate, Nova!
 				
-					if messagebox.askyesno('Play again?', 'Stalemate!!! \n Would you like to play again?'):
+					if messagebox.askyesno('Play again?', ai.speak.get_speech(7) + '\n\nStalemate!!! \n Would you like to play again?'):
 						self.new_game()
 					else:# you lose
 						sys.exit()
@@ -663,14 +675,14 @@ class ApocalypseGUI:
 			else:
 				
 				self.output_text('You earned a penalty point') # oh no!!!	
-				
+				self.output_text(ai.speak.get_speech(1))
 				self.human_state.penalty += 1 # stacks on stacks
 				self.bac_canvas.itemconfig('penalty', image = self.spr_penalty)
 				#audio.play_beep("SystemHand") #replace
 				
 				if self.human_state.penalty == 2: # red card + 6 fouls :/
 				
-					if messagebox.askyesno('Play again?', 'You Lose! :( \n Would you like to play again?'):
+					if messagebox.askyesno('Play again?', ai.speak.get_speech(5) + '\n\nYou Lose! :( \n Would you like to play again?'):
 						self.new_game()
 					else:# you lose
 						sys.exit() # and your kicked out! <(;-;)>

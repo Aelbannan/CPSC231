@@ -17,6 +17,7 @@ override = [] # once in a lifetime moves
 
 difficulty = 4 # branching factor ~ difficulty
 
+
 # a small circular node. Found in forests
 class node:
 	
@@ -69,7 +70,7 @@ class node:
 		elif self.state == 'human': # if humans go
 		
 			# get all valid moves
-			self.get_valid_moves(self.dic_human, self.dic_ai)
+			self.get_valid_moves(self.dic_human, self.dic_ai, self.get_ancestor(1).dic_ai)
 			
 			# if i have children
 			if self.children != []:
@@ -86,7 +87,7 @@ class node:
 		elif self.state == 'ai': # if ai's turn
 		
 			# get all valid moves
-			self.get_valid_moves(self.dic_ai, self.dic_human) 
+			self.get_valid_moves(self.dic_ai, self.dic_human, self.get_ancestor(1).dic_human) 
 			#print(self.children)
 			
 			# loop thru kids
@@ -95,7 +96,7 @@ class node:
 				# finalize turn
 				c.dic_human, mb = grid.check_knight(c.dic_human)
 				c.dic_ai, mb = grid.check_knight(c.dic_ai)
-				c.dic_human, c.dic_ai = grid.finalize_move(c.dic_human, c.dic_ai, self.last_piece, c.last_piece)
+				c.dic_human, c.dic_ai, b = grid.finalize_move(c.dic_human, c.dic_ai, self.last_piece, c.last_piece)
 				
 			# get the cream of the crop moves
 			best = best_moves(self.children)
@@ -143,7 +144,9 @@ class node:
 			
 			
 	### returns all valid moves as nodes		
-	def get_valid_moves(self, dic, dic_opp):
+	def get_valid_moves(self, dic, dic_opp, dic_org):
+	
+		##### A LOT OF REPEATED CODE IN THIS FUNCTION, HOWEVER THIS IS FOR SPEED. PUTTING IT IN ANOTHER FUNCTIONS SLOWS IT DOWN CONSIDERABLY
 		
 		for piece in dic:  # go thru dictionary, piece by piece
 		
@@ -153,6 +156,7 @@ class node:
 			
 				board = grid.recreate_grid(dic) # trying to optimize speed, boards are slighty faster
 				opp_board = grid.recreate_grid(dic_opp)
+				org_board = grid.recreate_grid(dic_org)
 
 				
 				if piece[1] == 'K': # if piece is a knight
@@ -212,7 +216,7 @@ class node:
 					if 0 <= new_col < grid.GRID_WIDTH and 0 <= new_row < grid.GRID_HEIGHT: # if move is on board
 						
 							# if move is not overlapping another piece 
-							if board[new_row][new_col] == grid.b and opp_board[new_row][new_col] == grid.b:
+							if board[new_row][new_col] == grid.b and opp_board[new_row][new_col] == grid.b and org_board[new_row][new_col] == grid.b:
 								can_move = True
 								
 							if can_move:								
@@ -241,7 +245,7 @@ class node:
 					if 0 <= new_col < grid.GRID_WIDTH and 0 <= new_row < grid.GRID_HEIGHT: # if move is on board
 						
 							# if move is not overlapping another piece and there is enemy
-							if board[new_row][new_col] == grid.b and opp_board[new_row][new_col] != grid.b:
+							if board[new_row][new_col] == grid.b and opp_board[new_row][new_col] != grid.b and org_board[new_row][new_col] != grid.b:
 								can_move = True
 								
 							if can_move:								
@@ -273,7 +277,7 @@ class node:
 					if 0 <= new_col < grid.GRID_WIDTH and 0 <= new_row < grid.GRID_HEIGHT: # if move is on board
 						
 							# if move is not overlapping another piece and there is enemy
-							if board[new_row][new_col] == grid.b and opp_board[new_row][new_col] != grid.b:
+							if board[new_row][new_col] == grid.b and opp_board[new_row][new_col] != grid.b and org_board[new_row][new_col] != grid.b:
 								can_move = True
 								
 							if can_move:								
@@ -428,15 +432,29 @@ def get_move(dic_human):
 	
 	return state.dic, chosen_node.last_piece
 
-# debugging
-"""for e in possible_moves:
-	print(e.last_piece, e.level)
-	print(e.parent.dic_human)
-	print(e.parent.dic_ai)
-	print(e.dic_human)
-	print(e.dic_ai)
-	for u in grid.recreate_grid(e.dic_human):
-		print(u)
-	for u in grid.recreate_grid(e.dic_ai):
-		print(u)
-	input('...')"""
+class MSG_Bot:
+
+	def __init__(self):
+	
+		self.phrases = []
+		f = open('resources/msglist.ait', 'r')
+		
+		for x in range(int(f.readline())):
+		
+			f.readline()
+			
+			row = []
+			
+			for i in range(int(f.readline())):
+			
+				x = f.readline()
+				x = x.rstrip("\n")
+				row.append(x)
+				
+			self.phrases.append(row)
+
+	
+	def get_speech(self, phrase_type):
+	
+		return ('CPU: ' + self.phrases[phrase_type][random.randint(0,len(self.phrases[phrase_type]))-1])
+
